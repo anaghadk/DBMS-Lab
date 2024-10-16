@@ -1,0 +1,114 @@
+name: Anagha D K
+usn: 1BM23CS032
+
+
+create table Branch (
+branch_name varchar(30), branch_city varchar(10), assets real,
+primary key(branch_name)); 
+desc Branch;
+
+create table BankAccount (
+accno int, branch_name varchar(20), balance real,
+primary key(accno),
+foreign key(branch_name) references Branch(branch_name));
+desc BankAccount;
+
+create table BankCustomer (
+customer_name varchar(10), customer_street varchar(50),
+customer_city varchar(10),
+primary key(customer_name));
+desc BankCustomer;
+
+create table Depositer (
+customer_name varchar(10), accno int,
+primary key(customer_name, accno),
+foreign key(customer_name) references BankCustomer(customer_name),
+foreign key(accno) references BankAccount(accno));
+desc Depositer;
+
+create table Loan (
+loan_no int, branch_name varchar(20), amount real,
+primary key(loan_no),
+foreign key(branch_name) references Branch(branch_name));
+desc Loan;
+
+INSERT INTO Branch
+VALUES('SBI_Chamrajpet', 'Bangalore',50000),
+('SBI_RecidencyRoad', 'Bangalore',10000),
+    ('SBI_ShivajiRoad', 'Bombay',20000),
+    ('SBI_ParlimentRoad', 'Delhi',10000),
+    ('SBI_Jantamantar', 'Delhi',20000);
+
+      select * from Branch;
+     
+INSERT INTO BankAccount
+VALUES(1,'SBI_Chamrajpet',2000),
+(2,'SBI_RecidencyRoad',5000),
+    (3,'SBI_ShivajiRoad',6000),
+    (4,'SBI_ParlimentRoad',9000),
+    (5,'SBI_Jantamantar',8000),
+    (6,'SBI_ShivajiRoad',4000),
+    (8,'SBI_RecidencyRoad',4000),
+    (9,'SBI_ParlimentRoad',3000),
+    (10,'SBI_RecidencyRoad',5000),
+    (11,'SBI_Jantamantar',2000);
+
+      select * from BankAccount;
+
+INSERT INTO BankCustomer
+VALUES('Avinash', 'Bull_Temple_Road ','Bangalore'),
+('Dinesh', 'Bannergatta_Road ','Bangalore'),
+    ('Mohan', 'NationalCollege_Road ','Bangalore'),
+    ('Nikil', 'Akbar_Road','Delhi'),
+    ('Ravi', 'Prithviraj_Road ','Delhi');
+   
+select * from BankCustomer;
+   
+INSERT INTO Depositer
+VALUES('Avinash',1),
+('Dinesh',2),
+    ('Nikil',4),
+    ('Ravi',5),
+    ('Avinash',8),
+    ('Nikil',9),
+    ('Dinesh',10),
+    ('Nikil',11);
+   
+    select * from Depositer;
+
+INSERT INTO Loan
+VALUES(1,'SBI_Chamrajpet',1000),
+(2,'SBI_RecidencyRoad',2000),
+    (3,'SBI_ShivajiRoad',3000),
+    (4,'SBI_ParlimentRoad',4000),
+    (5,'SBI_Jantamantar',5000);
+   
+select * from Loan;
+   
+select branch_name,(assets/1000000) as 'assets in lakhs'
+from Branch;
+
+alter table Branch
+rename column assets_in_lakhs to assets;
+select * from Branch;
+
+SELECT d.customer_name, COUNT(d.accno), b.branch_name
+FROM Depositer d
+JOIN BankAccount b ON d.accno = b.accno
+GROUP BY d.customer_name, b.branch_name
+HAVING COUNT(d.accno) >= 2;
+
+create view totalBankloan
+as select branch_name,sum(amount)
+from Loan
+group by branch_name;
+
+select * from totalBankloan;
+
+
+select d.customer_name,b.branch_name, count(b.accno) 
+from depositer d, BankAccount b
+where d.accno=b.accno
+group by b.branch_name, d.customer_name 
+having count(b.accno)>=2;
+
