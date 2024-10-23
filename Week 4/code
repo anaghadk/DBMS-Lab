@@ -1,0 +1,36 @@
+SELECT d.customer_name 
+FROM Depositer d 
+JOIN BankAccount ba ON d.accno = ba.accno
+JOIN Branch b ON ba.branch_name = b.branch_name
+WHERE b.branch_city = 'Delhi'
+GROUP BY d.customer_name
+HAVING COUNT(distinct ba.branch_name) = (SELECT COUNT(distinct branch_name) FROM Branch WHERE branch_city = 'Delhi');
+
+
+SELECT DISTINCT B.customer_name 
+FROM Borrower B 
+WHERE B.customer_name NOT IN (SELECT D.customer_name FROM Depositer D);
+
+
+SELECT DISTINCT D.customer_name 
+FROM Depositer D 
+JOIN BankAccount A ON D.accno = A.accno 
+JOIN Borrower B ON D.customer_name = B.customer_name 
+JOIN Loan L ON B.loan_no = L.loan_no 
+WHERE A.branch_name = 'SBI_Chamrajpet' or L.branch_name = 'SBI_Chamrajpet';
+
+
+SELECT branch_name 
+FROM Branch 
+WHERE assets > all(SELECT assets FROM Branch WHERE branch_city = 'Bangalore');
+
+
+DELETE FROM BankAccount 
+WHERE branch_name IN (SELECT branch_name FROM Branch WHERE branch_city = 'Bombay');
+select * from BankAccount;
+
+UPDATE BankAccount 
+SET balance = round(balance * 1.05)
+where branch_name in ('SBI_Chamrajpet','SBI_recidencyRoad','SBI_ParlimentRoad','SBI_Jantamantar');
+select * from BankAccount;
+
