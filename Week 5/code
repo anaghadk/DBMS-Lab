@@ -1,0 +1,94 @@
+Anagha D K
+1BM23CS032
+
+create table dept (
+deptno int, dname varchar(30), dloc varchar(30),
+primary key(deptno));
+desc dept;
+
+create table employee (
+empno int, ename varchar(20), mgrno int,
+hireddate date, sal real, deptno int,
+primary key(empno),
+foreign key(deptno) references dept(deptno));
+desc employee;
+
+create table incentives (
+empno int, incentive_date date, incentive_amt real,
+primary key(empno,incentive_date),
+foreign key(empno) references employee(empno));
+desc incentives;
+
+create table project (
+pno int, ploc varchar(30), pname varchar(20),
+primary key(pno));
+desc project;
+
+create table assigned_to (
+empno int, pno int, jobrole varchar(30),
+primary key(empno, pno),
+foreign key(empno) references employee(empno),
+foreign key(pno) references project(pno));
+
+INSERT INTO dept
+VALUES(10, 'CSE ','Bangalore'),
+	(20, 'ECE ','Bangalore'),
+    (30, 'ISE ','Bangalore'),
+    (40, 'IOT','Delhi'),
+    (50, 'EEE ','Delhi');
+    select * from dept;
+
+INSERT INTO employee
+VALUES(1, 'Ravi ',11,'2003-01-02',10000,10),
+(2, 'Dinesh ',12,'2003-02-02',20000,10),
+    (3, 'Avinash ',13,'2003-03-02',30000,10),
+    (4, 'Avinash',14,'2003-04-02',40000,30),
+    (5, 'Prithviraj ',15,'2003-05-02',54000,20),
+    (6, 'Qwibb',14,'2003-06-02',40000,30),
+    (7, 'Sneha',14,'2003-07-02',40000,30);
+select * from employee;
+
+insert into incentives
+values(1,'2003-01-02',2100);
+insert into incentives
+values(2,'2003-06-09',5980);
+insert into incentives
+values(3,'2003-09-01',8900);
+insert into incentives
+values(4,'2005-02-01',9080);
+insert into incentives
+values(5,'2008-06-12',6679);
+select * from incentives;
+
+INSERT INTO project
+VALUES(21,'Bangalore','abc'),
+	(22,'Hyderabad','def'),
+    (23,'Mysuru','avse'),
+    (24,'Mysuru','geewq'),
+    (25,'Delhi','hgfty');
+    select * from project;
+   
+INSERT INTO assigned_to
+VALUES(1, 21,'manager'),
+(2, 22,'director'),
+    (3, 23,'adfgh'),
+    (4, 24,'qwert'),
+    (5, 25,'yuiop');
+    select * from assigned_to;
+   
+select empno
+from assigned_to a
+join project p on a.pno=p.pno
+where p.ploc in ('Bangalore','Hyderabad','Mysuru');
+
+select empno
+from employee
+where empno not in (select empno from incentives);
+
+SELECT e.ename, e.empno, d.dname, a.jobrole, d.dloc, p.ploc
+FROM employee e
+JOIN dept d ON e.deptno = d.deptno
+JOIN assigned_to a ON e.empno = a.empno
+JOIN project p ON a.pno = p.pno
+WHERE d.dloc = p.ploc;
+
