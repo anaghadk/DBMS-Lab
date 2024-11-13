@@ -1,0 +1,163 @@
+1BM23CS032
+
+
+create table dept (
+deptno int, dname varchar(30), dloc varchar(30),
+primary key(deptno));
+
+create table employee (
+empno int, ename varchar(20), mgrno int,
+hireddate date, sal real, deptno int,
+primary key(empno),
+foreign key(deptno) references dept(deptno));
+
+create table incentives (
+empno int, incentive_date date, incentive_amt real,
+primary key(empno,incentive_date),
+foreign key(empno) references employee(empno));
+
+create table project (
+pno int, ploc varchar(30), pname varchar(20),
+primary key(pno));
+
+create table assigned_to (
+empno int, pno int, jobrole varchar(30),
+primary key(empno, pno),
+foreign key(empno) references employee(empno),
+foreign key(pno) references project(pno));
+
+INSERT INTO dept
+VALUES(10, 'CSE ','Bangalore'),
+(20, 'ECE ','Bangalore'),
+    (30, 'ISE ','Bangalore'),
+    (40, 'IOT','Delhi'),
+    (50, 'EEE ','Delhi');
+    
+INSERT INTO employee (empno, ename, mgrno, hireddate, sal, deptno) VALUES
+    (1, 'Ravi', NULL, '2003-01-02', 99000, 10),        -- No manager
+    (2, 'Dinesh', 1, '2003-02-02', 20000, 10),         -- Manager is Ravi
+    (3, 'Avinash', 1, '2003-03-02', 30000, 10),        -- Manager is Ravi
+    (4, 'Prithviraj', 2, '2003-04-02', 54000, 20),     -- Manager is Dinesh
+    (5, 'Qwibb', 2, '2003-05-02', 40000, 30),          -- Manager is Dinesh
+    (6, 'Sneha', 3, '2003-06-02', 40000, 30),          -- Manager is Avinash
+    (7, 'Lala', 3, '2003-07-02', 30000, 10),           -- Manager is Avinash
+    (8, 'Lulu', 1, '2003-08-02', 30000, 10); 
+
+INSERT INTO employee
+VALUES(1, 'Ravi ',11,'2003-01-02',10000,10),
+(2, 'Dinesh ',12,'2003-02-02',20000,10),
+    (3, 'Avinash ',13,'2003-03-02',30000,10),
+    (4, 'Avinash',14,'2003-04-02',40000,30),
+    (5, 'Prithviraj ',15,'2003-05-02',54000,20),
+    (6, 'Qwibb',14,'2003-06-02',40000,30),
+    (7, 'Sneha',14,'2003-07-02',40000,30);
+
+insert into incentives
+values(1,'2003-01-02',2100);
+insert into incentives
+values(2,'2003-06-09',5980);
+insert into incentives
+values(3,'2003-09-01',8900);
+insert into incentives
+values(4,'2005-02-01',9080);
+insert into incentives
+values(5,'2008-06-12',6679);
+
+insert into incentives
+values(6,'2019-01-08',2100);
+insert into incentives
+values(7,'2019-01-02',2180);
+
+
+INSERT INTO project
+VALUES(21,'Bangalore','abc'),
+(22,'Hyderabad','def'),
+    (23,'Mysuru','avse'),
+    (24,'Mysuru','geewq'),
+    (25,'Delhi','hgfty');
+   
+INSERT INTO assigned_to
+VALUES(1, 21,'manager'),
+(2, 22,'director'),
+    (3, 23,'adfgh'),
+    (4, 24,'qwert'),
+    (5, 25,'yuiop');
+   
+select empno
+from assigned_to a
+join project p on a.pno=p.pno
+where p.ploc in ('Bengalore','Hyderabad','Mysuru');
+
+select empno
+from employee
+where empno not in (select empno from incentives);
+
+SELECT e.ename, e.empno, d.dname, a.jobrole, d.dloc, p.ploc
+FROM employee e
+JOIN dept d ON e.deptno = d.deptno
+JOIN assigned_to a ON e.empno = a.empno
+JOIN project p ON a.pno = p.pno
+WHERE d.dloc = p.ploc;
+
+SELECT e2.ename
+FROM employee e2
+JOIN (
+    SELECT e1.mgrno, COUNT(e1.empno) AS emp_count
+    FROM employee e1
+    GROUP BY e1.mgrno
+) AS mc ON e2.empno = mc.mgrno
+WHERE mc.emp_count = (
+    SELECT MAX(sub.emp_count)
+    FROM (
+        SELECT COUNT(empno) AS emp_count
+        FROM employee
+        GROUP BY mgrno
+    ) AS sub
+);
+
+
+
+SELECT e2.ename AS manager_name
+FROM employee e2
+JOIN employee e1 ON e1.mgrno = e2.empno
+GROUP BY e2.empno, e2.ename, e2.sal
+HAVING e2.sal > AVG(e1.sal);
+
+SELECT DISTINCT top_level.ename AS second_level_manager, d.dname AS department_name
+FROM employee AS top_level
+JOIN employee AS second_level ON second_level.mgrno = top_level.empno
+JOIN dept AS d ON top_level.deptno = d.deptno
+WHERE top_level.mgrno IS NULL
+  AND top_level.deptno = d.deptno; 
+
+
+
+SELECT e.empno, e.ename, e.mgrno, e.hireddate, e.sal, e.deptno, i.incentive_amt, i.incentive_date
+FROM employee e
+JOIN incentives i ON e.empno = i.empno
+WHERE i.incentive_date BETWEEN '2019-01-01' AND '2019-01-31'
+  AND i.incentive_amt = (
+      SELECT MAX(incentive_amt)
+      FROM incentives
+      WHERE incentive_date BETWEEN '2019-01-01' AND '2019-01-31'
+        AND incentive_amt < (
+            SELECT MAX(incentive_amt)
+            FROM incentives
+            WHERE incentive_date BETWEEN '2019-01-01' AND '2019-01-31'
+        )
+  );
+
+SELECT e.empno, e.ename, e.mgrno, e.hireddate, e.sal, e.deptno
+FROM employee e
+JOIN employee mgr ON e.mgrno = mgr.empno
+WHERE e.deptno = mgr.deptno;
+
+
+SELECT e2.ename AS manager_name, max(e2.sal),e2.deptno
+FROM employee e2
+JOIN employee e1 ON e1.mgrno = e2.empno
+where e2.sal!=(select max(sal) from employee)
+GROUP BY e1.mgrno,e2.deptno;
+
+
+
