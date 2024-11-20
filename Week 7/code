@@ -1,0 +1,102 @@
+Anagha D K
+1BM23CS032
+
+
+create table supplier (
+sid int, sname varchar(20), city varchar(30),
+primary key(sid));
+
+create table parts (
+pid int, pname varchar(20), color varchar(20),
+primary key(pid));
+
+create table catalog (
+sid int, pid int, cost real,
+primary key(pid, sid),
+foreign key(sid) references supplier(sid),
+foreign key(pid) references parts(pid));
+
+INSERT INTO supplier
+VALUES(10001, 'Acme Widget ','Bangalore'),
+(10002, 'Johns ','Kolkata'),
+    (10003, 'Vimal ','Mumbai'),
+    (10004, 'Reliance','Delhi');
+    select * from supplier;
+   
+INSERT INTO parts
+VALUES(20001, 'Book ','Red'),
+(20002, 'Pen ','Red'),
+    (20003, 'Pencil ','Green'),
+    (20004, 'Mobile','Green'),
+    (20005, 'Charger ','Black');
+   select * from parts;
+   
+insert into catalog
+values(10001,20001,10),
+(10001,20002,10),
+    (10001,20003,30),
+    (10001,20004,10),
+    (10001,20005,10),
+    (10002,20001,10),
+    (10002,20002,20),
+    (10003,20003,30),
+    (10004,20003,40);
+   select * from catalog;
+   
+   select pname
+   from parts
+   where pid in (select pid from catalog);
+
+
+                   
+select s.sname
+from supplier s join catalog c
+on s.sid=c.sid
+group by c.sid
+having count(distinct c.pid)=(select count(*) from parts);
+
+select s.sname
+from supplier s join catalog c
+on s.sid=c.sid
+join parts p on p.pid=c.pid
+where p.color='red'
+group by c.sid
+having count(distinct c.pid)=(select count(*) from parts p where p.color='red');
+
+select p.pname
+from parts p
+join catalog c
+on p.pid=c.pid
+join supplier s on s.sid=c.sid
+where s.sname='Acme Widget '
+and not exists(
+select * from catalog c1 join supplier s1
+on c1.sid=s1.sid
+where c1.pid=p.pid and
+s1.sname!='Acme Widget ');
+ 
+select distinct s.sid
+from supplier s
+join catalog c on s.sid = c.sid
+where c.cost > (
+    select avg(c1.cost)
+    from catalog c1
+    where c1.pid = c.pid
+);
+
+select p.pid, s.sname, c.cost
+from parts p
+join catalog c on p.pid = c.pid
+join supplier s on s.sid = c.sid
+where (c.pid, c.cost) in (
+    select c1.pid, max(c1.cost)
+    from catalog c1
+    group by c1.pid
+); 
+
+
+
+
+
+
+
